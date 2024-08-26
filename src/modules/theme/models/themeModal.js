@@ -12,8 +12,8 @@ const ThemeSchema = new Schema({
 
    theme: {
         type: String,
-        enum: ['light', 'dark'], // Add more themes as needed
-        default: 'light',
+        enum: ['black', 'white'], // Add more themes as needed
+        default: 'white',
         required: true
     },
     fontSize: {

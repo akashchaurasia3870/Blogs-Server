@@ -31,7 +31,7 @@ export const authMiddleware = async (req, res, next) => {
     } catch (err) {
         console.log(err);
 
-        return res.status(401).json({ error: 'Unauthorized: Invalid token' });
+        return res.status(401).json({ error: 'Unauthorized: Invalid token',message : "token expire login again" });
     }
 };
 

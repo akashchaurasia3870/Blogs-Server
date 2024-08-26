@@ -1,6 +1,8 @@
 import CustomError from '../../../customErrors/CustomError.js'
 import { Comment, Location, Blog, Likes } from '../models/blogModel.js';
 
+import { getTheme } from '../../theme/controllers/themeController.js';
+
 async function addPost(data) {
     try {
 
@@ -83,16 +85,21 @@ async function getPost(req) {
             }
         ]);
 
+        console.log(req.body.user_id);
+        
+
         const category_blog = await getSimilerBlogs();
         const trending_blog = await getTrandingBlogs();
         const trending_author = await getTradingAuthor();
+        const theme_data = await getTheme(req.body.user_id);
 
-        console.log("category_blog ",category_blog);
-        console.log("trending_blog ",trending_blog);
-        console.log("trending_author ",trending_author);
+        // console.log("category_blog ",category_blog);
+        // console.log("trending_blog ",trending_blog);
+        // console.log("trending_author ",trending_author);
+        // console.log("theme_data ",theme_data);
         
 
-        return { message: 'User Posts', success: true, statusCode: 200, data: blogs , data_c : {category_blog,trending_blog,trending_author} }
+        return { message: 'User Posts', success: true, statusCode: 200, data: blogs , data_c : {category_blog,trending_blog,trending_author,theme_data} }
 
     } catch (error) {
         throw new CustomError(error.message || 'Error signing up user', error.statusCode || 500);

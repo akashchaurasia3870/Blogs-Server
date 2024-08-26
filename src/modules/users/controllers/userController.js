@@ -7,7 +7,7 @@ dotenv.config();
 import { createTheme } from '../../theme/controllers/themeController.js';
 
 const jwtSecret = process.env.ACCESS_TOKEN_SECRET; // Replace with your actual JWT secret key
-const jwtExpiresIn = '20m'; // JWT expiration time, e.g., '1d' for 1 day
+const jwtExpiresIn = '60m'; // JWT expiration time, e.g., '1d' for 1 day
 
 const SignUpNewUser = async (userData) => {
     try {
