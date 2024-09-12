@@ -5,7 +5,9 @@ import jwt from 'jsonwebtoken';
 import dotenv from "dotenv";
 dotenv.config();
 import { createTheme } from '../../theme/controllers/themeController.js';
-
+import { sendEmails } from '../../mails/middlewares/mailsMiddleware.js';
+import {MailVerfication} from '../../mails/models/mailsModel.js'
+import { sendVerificationMail } from '../../mails/controllers/mailsController.js';
 const jwtSecret = process.env.ACCESS_TOKEN_SECRET; // Replace with your actual JWT secret key
 const jwtExpiresIn = '60m'; // JWT expiration time, e.g., '1d' for 1 day
 
@@ -37,6 +39,8 @@ const SignUpNewUser = async (userData) => {
         // Save user to database
         await newUser.save();
         createTheme(newUser.user_id);
+        sendVerificationMail([newUser.email],'123456',newUser.user_id)
+        // sendEmails([newUser.email],`Greetings ${newUser.username}`,'<h1>Welcome</h1>')
 
         const token = jwt.sign({ user_id: newUser.user_id }, jwtSecret, { expiresIn: jwtExpiresIn });
 
@@ -65,6 +69,9 @@ const SignInUser = async (email, password) => {
         }
 
         const token = jwt.sign({ user_id: user.user_id }, jwtSecret, { expiresIn: jwtExpiresIn });
+
+        createTheme(user.user_id);
+
 
 
         // Return user or token for authentication
@@ -159,13 +166,34 @@ const UpdateUserDetails = async (req, res) => {
     }
 };
 
-const VerifyUser = async (user_id) => {
+const VerifyUser = async (user_id,inputCode) => {
     try {
         // Implement verification logic
-        const filter = { user_id };
-        const update = { $set: { verified: true } };
-        await User.updateOne(filter, update)
-        return { message: 'User verified successfully' };
+         // Find the record with the user's ID
+        const result = await MailVerfication.findOne({ user_id }).sort({ created_at: -1 }).limit(1);
+
+        if (result) {
+                const storedCode = result.code;
+                const createdAt = result.created_at;
+
+                // Check if the input code matches the stored code
+                if (inputCode === storedCode) {
+                    // Check if the code is expired (e.g., 15 minutes expiry)
+                    const expirationTime = new Date(createdAt.getTime() + 15 * 60 * 1000); // 15 minutes from creation
+                    if (new Date() < expirationTime) { 
+                        const filter = { user_id };
+                        const update = { $set: { verified: true } };
+                        await User.updateOne(filter, update)
+                        return { message: 'User verified successfully' };
+                    } else {
+                        return "Code expired";
+                    }
+                } else {
+                    return "Invalid code";
+                }
+        } else {
+        return "No code found for this user";
+        }
     } catch (error) {
         throw new CustomError(error.message || 'Error verifying user', error.statusCode || 500);
     }

@@ -10,9 +10,9 @@ const createTheme = async (user_id) => {
         if (existingUser) {
             const newTheme = new Theme({
                 theme_user_id:user_id,
-                theme: 'dark',
+                theme: 'black',
                 fontSize: '15px',
-                fontColor: '#FF0000',
+                fontColor: 'white',
                 fontWeight: 'font-bold',
                 fontStyle: 'font-italic',
                 backgroundStyle: 'linear-gradient(to right, #ff7e5f, #feb47b)'
@@ -56,7 +56,27 @@ const getTheme = async (user_id ) => {
 
 
         if (!theme) {
+            // throw new Error('Theme not found for the specified user.');
+            await createTheme(user_id)
+            theme = await getTheme(user_id)
+        }
+
+        return theme;
+    } catch (error) {
+        throw new CustomError(error.message || 'Error signing up user', error.statusCode || 500);
+    }
+};
+
+const checkTheme = async (user_id ) => {
+    try {
+        // Find the theme by user_id and update the provided fields
+        const theme = await Theme.findOne({ theme_user_id: user_id });
+
+
+        if (!theme) {
             throw new Error('Theme not found for the specified user.');
+            await createTheme(user_id)
+            theme = await getTheme(user_id)
         }
 
         return theme;
@@ -70,5 +90,5 @@ const getTheme = async (user_id ) => {
 export {
     updateTheme,
     createTheme,
-    getTheme
+    getTheme,
 };

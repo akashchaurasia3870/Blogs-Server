@@ -7,6 +7,10 @@ import userRouter from './src/modules/users/routes/userRoutes.js';
 import themeRouter from './src/modules/theme/routes/themeRoutes.js';
 import blogRouter from './src/modules/blogs/routes/blogRoutes.js';
 import chatRouter from './src/modules/chat/routes/chatRoutes.js';
+import notificationRouter from './src/modules/notification/routes/notificationRoutes.js';
+
+import mailRouter from './src/modules/mails/routes/mailsRoutes.js';
+
 import { authMiddleware } from './src/GlobalMiddlewares/tokenVerification.js';
 import { v4 as uuidv4 } from 'uuid';
 import fs from 'fs';
@@ -92,9 +96,11 @@ app.use('/users', userRouter);
 app.use('/blogs', authMiddleware, blogRouter);
 app.use('/chats', authMiddleware, chatRouter);
 app.use('/theme', authMiddleware, themeRouter);
+app.use('/mail', authMiddleware, mailRouter);
+app.use('/notification', authMiddleware, notificationRouter);
 
 app.get('/', (req, res) => {
-    res.status(200).send('SNAPPER SERVER START');
+    res.status(200).send('MERN BLOG SERVER START');
 });
 
 app.use((req, res) => {
