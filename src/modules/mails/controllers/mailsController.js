@@ -78,16 +78,48 @@ async function sendMassMail(req) {
     }
 }
 
-async function getMails(req,limit='') {
+async function getMails(req) {
     try {
-        let { search ,option } = req.body;
+        let {limit,pages,search,sort,sort_order} = req.body;
 
         const filter = { deleted:'0' };
-        const mails = await Mail.find(filter, { projection: {  deleted: 0, _id: 0 } });
 
-        return { message: 'User Mails', success: true, statusCode: 200, data: mails }
+        if(search!=''){
+            filter = { 
+                deleted:'0' ,
+                $or: [
+                    { title: { $regex: search, $options: 'i' } }, // Case-insensitive search on title
+                    { content: { $regex: search, $options: 'i' } } // Case-insensitive search on content
+                ]
+            };
+        }
+
+        const totalItems = await Mail.countDocuments(filter);
+
+        const totalPages = Math.ceil(totalItems / limit); // ceil to ensure rounding up
+
+        // Ensure the page is within bounds
+        pages = Math.max(1, Math.min(pages, totalPages)); // Page can't be less than 1 or more than totalPages
+
+        // Calculate the number of items to skip based on the current page
+        const skip = (pages - 1) * limit;
+
+
+        const mails = await Mail.find(filter, { projection: {  deleted: 0, _id: 0 } }).sort({ [sort]: sort_order === 'asc' ? 1 : -1 })
+        .skip(skip)
+        .limit(limit);
+
+        let pagination_data = {
+            currentPage: pages,
+            totalPages: totalPages,
+            totalItems: totalItems
+        }
+
+        return { message: 'User Mails', success: true, statusCode: 200, data: notifications ,pagination_data}
 
     } catch (error) {
+        console.log(error.message);
+        
         throw new CustomError(error.message || 'Error signing up user', error.statusCode || 500);
     }
 }

@@ -113,6 +113,73 @@ async function getPost(req) {
         throw new CustomError(error.message || 'Error signing up user', error.statusCode || 500);
     }
 }
+async function getBlogs(req) {
+    try {
+        
+        let {limit,pages,search,sort,sort_order} = req.body;
+        
+
+        const filter = { 
+            deleted:'0'
+        };
+
+        if(search!=''){
+            filter = { 
+                deleted:'0' ,
+                $or: [
+                    { title: { $regex: search, $options: 'i' } }, // Case-insensitive search on title
+                    { content: { $regex: search, $options: 'i' } } // Case-insensitive search on content
+                ]
+            };
+        }
+
+
+        const totalItems = await Blog.countDocuments(filter);
+
+        const totalPages = Math.ceil(totalItems / limit); // ceil to ensure rounding up
+
+        // Ensure the page is within bounds
+        pages = Math.max(1, Math.min(pages, totalPages)); // Page can't be less than 1 or more than totalPages
+
+        // Calculate the number of items to skip based on the current page
+        const skip = (pages - 1) * limit;
+
+
+        const blogs = await Blog.aggregate([
+            {
+                $match: {
+                    $or: [
+                        { caption: { $regex: search, $options: 'i' } },
+                        // { content: { $regex: search, $options: 'i' } },
+                        { hashtag: { $regex: search, $options: 'i' } }
+                    ]
+                }
+            },
+            {
+                $project: {
+                    comments: 0,
+                    deleted: 0,
+                    _id: 0
+                }
+            }
+        ]).sort({ [sort]: sort_order === 'asc' ? 1 : -1 })
+        .skip(skip)
+        .limit(limit);
+
+        let pagination_data = {
+            currentPage: pages,
+            totalPages: totalPages,
+            totalItems: totalItems
+        }
+
+        return { message: 'Blogs Data', success: true, statusCode: 200, data: blogs ,pagination_data}
+
+    } catch (error) {
+        console.log(error.message);
+        
+        throw new CustomError(error.message || 'Error signing up user', error.statusCode || 500);
+    }
+}
 
 async function getSimilerBlogs(category='') {
     try {
@@ -302,4 +369,4 @@ async function addComment(data) {
 
 
 
-export { addPost, getPost, deletePost, updatePost, addComment, addLikes, deleteLike,getPostById };
+export { addPost, getPost, deletePost, updatePost, addComment, addLikes, deleteLike,getPostById,getBlogs };

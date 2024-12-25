@@ -10,6 +10,7 @@ import {
     SignOutUser,
     UpdateUserDetails,
     UserDetails,
+    UsersDetails,
     getAuthors
 } from '../controllers/userController.js'; // Adjust the path based on your project structure
 import { authMiddleware } from '../../../GlobalMiddlewares/tokenVerification.js';
@@ -41,6 +42,15 @@ userRouter.post('/signin', Logs, async (req, res) => {
 userRouter.post('/get_user', Logs, authMiddleware, async (req, res) => {
     try {
         const result = await UserDetails(req, res);
+        res.status(200).json(result);
+    } catch (error) {
+        res.status(error.statusCode || 500).json({ message: error.message });
+    }
+});
+
+userRouter.post('/get_users', Logs, authMiddleware, async (req, res) => {
+    try {
+        const result = await UsersDetails(req, res);
         res.status(200).json(result);
     } catch (error) {
         res.status(error.statusCode || 500).json({ message: error.message });

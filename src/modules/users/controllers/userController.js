@@ -104,6 +104,56 @@ const UserDetails = async (req, res) => {
         throw new CustomError(error.message || 'Error signing in user', error.statusCode || 500);
     }
 };
+const UsersDetails = async (req, res) => {
+    try {
+        // Find user by email
+
+        console.log(req.body);
+
+        let {limit,pages,search,sort,sort_order} = req.body;
+
+        const filter = { 
+            deleted:'0'
+        };
+
+        if(search!=''){
+            filter = { 
+                deleted:'0' ,
+                $or: [
+                    { title: { $regex: search, $options: 'i' } }, // Case-insensitive search on title
+                    { content: { $regex: search, $options: 'i' } } // Case-insensitive search on content
+                ]
+            };
+        }
+
+        const totalItems = await User.countDocuments(filter);
+
+        const totalPages = Math.ceil(totalItems / limit); // ceil to ensure rounding up
+
+        // Ensure the page is within bounds
+        pages = Math.max(1, Math.min(pages, totalPages)); // Page can't be less than 1 or more than totalPages
+
+        // Calculate the number of items to skip based on the current page
+        const skip = (pages - 1) * limit;
+
+        const users = await User.find(filter, { projection: { _id: 0, deleted: 0, verified: 0, roles: 0, googleid: 0 } }).sort({ [sort]: sort_order === 'asc' ? 1 : -1 })
+        .skip(skip)
+        .limit(limit);
+
+        let pagination_data = {
+            currentPage: pages,
+            totalPages: totalPages,
+            totalItems: totalItems
+        }
+
+        return { message: 'User Data', success: true, statusCode: 200, data: users ,pagination_data}
+
+    } catch (error) {
+        console.log(error.message);
+        
+        throw new CustomError(error.message || 'Error signing in user', error.statusCode || 500);
+    }
+};
 
 const getAuthors = async (req, res) => {
     try {
@@ -250,5 +300,6 @@ export {
     SignOutUser,
     UpdateUserDetails,
     UserDetails,
+    UsersDetails,
     getAuthors
 };

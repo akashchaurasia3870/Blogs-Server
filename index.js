@@ -7,6 +7,7 @@ import userRouter from './src/modules/users/routes/userRoutes.js';
 import themeRouter from './src/modules/theme/routes/themeRoutes.js';
 import blogRouter from './src/modules/blogs/routes/blogRoutes.js';
 import chatRouter from './src/modules/chat/routes/chatRoutes.js';
+import adminRouter from './src/modules/admin/routes/adminRoutes.js';
 import notificationRouter from './src/modules/notification/routes/notificationRoutes.js';
 
 import mailRouter from './src/modules/mails/routes/mailsRoutes.js';
@@ -98,6 +99,7 @@ app.use('/chats', authMiddleware, chatRouter);
 app.use('/theme', authMiddleware, themeRouter);
 app.use('/mail', authMiddleware, mailRouter);
 app.use('/notification', authMiddleware, notificationRouter);
+app.use('/admin', authMiddleware, adminRouter);
 
 app.get('/', (req, res) => {
     res.status(200).send('MERN BLOG SERVER START');

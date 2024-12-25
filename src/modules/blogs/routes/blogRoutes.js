@@ -5,7 +5,8 @@ import {
     addComment,
     addLikes,
     deleteLike,
-    getPostById
+    getPostById,
+    getBlogs
 } from '../controllers/blogController.js';
 
 import handleUploads from '../../../GlobalMiddlewares/fileUpload.js'
@@ -30,7 +31,19 @@ blogRouter.post('/add', Logs, handleUploads, async (req, res) => {
 
 blogRouter.post('/get', Logs, async (req, res) => {
     try {
+        console.log(req.url);
+        
         const result = await getPost(req);
+        return res.status(200).json(result);
+    } catch (error) {
+        return res.status(error.statusCode || 500).json({ message: error.message });
+    }
+});
+blogRouter.post('/get_blogs', Logs, async (req, res) => {
+    try {
+        console.log(req.url);
+        
+        const result = await getBlogs(req);
         return res.status(200).json(result);
     } catch (error) {
         return res.status(error.statusCode || 500).json({ message: error.message });
