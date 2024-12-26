@@ -1,5 +1,5 @@
 import express from 'express';
-import Logs from '../../../logs/index.js'
+import Logs from '../../../logs/logs.js'
 import {
     createChat,
     addParticipents,
